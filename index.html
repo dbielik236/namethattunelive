@@ -118,86 +118,7 @@ header {
 
 /* Decorative music illustration */
 
-.visual {
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  position:relative;
-  min-height:350px;
-}
 
-.record {
-  width:min(320px,75vw);
-  aspect-ratio:1;
-  border-radius:50%;
-  background:
-    repeating-radial-gradient(
-      circle,
-      #17232A 0px,
-      #17232A 2px,
-      #263943 3px,
-      #17232A 5px
-    );
-  box-shadow:0 25px 60px #071E2B88;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  animation:spin 18s linear infinite;
-}
-
-.record:before {
-  content:"";
-  position:absolute;
-  width:35%;
-  aspect-ratio:1;
-  border-radius:50%;
-  background:var(--coral);
-  border:8px solid #E8A39B;
-}
-
-.record:after {
-  content:"";
-  position:absolute;
-  width:8px;
-  aspect-ratio:1;
-  border-radius:50%;
-  background:#17232A;
-}
-
-.record-label {
-  position:absolute;
-  z-index:2;
-  font-size:12px;
-  font-weight:900;
-  color:#17394A;
-  letter-spacing:1px;
-  text-align:center;
-  line-height:1.5;
-  transform:translateY(-23px);
-}
-
-.music-note {
-  position:absolute;
-  color:var(--aqua);
-  font-size:65px;
-  font-weight:bold;
-}
-
-.note-one {
-  top:10px;
-  right:5px;
-}
-
-.note-two {
-  bottom:10px;
-  left:0;
-  color:var(--coral);
-}
-
-@keyframes spin {
-  to { transform:rotate(360deg); }
-}
 
 .intro {
   text-align:center;
@@ -218,27 +139,36 @@ header {
   color:#5D7079;
 }
 
-.how {
-  padding:65px 8% 85px;
+.rounds {
+  padding:75px 8%;
   background:#EAF5F5;
-}
-
-.how h2 {
   text-align:center;
-  font-size:34px;
-  color:var(--teal);
-  margin-bottom:45px;
 }
 
-.steps {
+.rounds h2 {
+  font-size:clamp(30px,4vw,43px);
+  color:var(--teal);
+  margin:15px 0;
+}
+
+.rounds-intro {
+  max-width:700px;
+  margin:0 auto 45px;
+  color:#637780;
+  font-size:17px;
+  line-height:1.7;
+}
+
+.round-grid {
   max-width:1050px;
   margin:auto;
   display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:25px;
+  grid-template-columns:repeat(6,1fr);
+  gap:22px;
 }
 
-.step {
+.round-card {
+  grid-column:span 2;
   background:white;
   padding:32px 25px;
   border-radius:12px;
@@ -246,9 +176,17 @@ header {
   box-shadow:0 5px 20px #16435A0C;
 }
 
-.step-number {
-  width:48px;
-  height:48px;
+.round-card:nth-child(4) {
+  grid-column:2 / span 2;
+}
+
+.round-card:nth-child(5) {
+  grid-column:4 / span 2;
+}
+
+.round-label {
+  width:96px;
+  height:96px;
   border-radius:50%;
   display:flex;
   justify-content:center;
@@ -256,20 +194,35 @@ header {
   margin:0 auto 18px;
   background:var(--aqua);
   color:var(--teal);
-  font-size:21px;
+  font-size:17px;
   font-weight:900;
 }
 
-.step h3 {
+.round-card h3 {
   color:var(--teal);
   font-size:21px;
+  margin:12px 0;
 }
 
-.step p {
+.round-card p {
   color:#637780;
   line-height:1.6;
   font-size:15px;
 }
+
+@media(max-width:750px) {
+  .round-grid {
+    grid-template-columns:1fr;
+  }
+
+  .round-card,
+  .round-card:nth-child(4),
+  .round-card:nth-child(5) {
+    grid-column:1;
+  }
+}
+
+
 
 .closing {
   background:var(--dark);
@@ -359,88 +312,121 @@ footer strong {
 
 <section class="hero">
   <div>
-    <div class="eyebrow">The music. The memories. The competition.</div>
+    <div class="eyebrow">A live musical game show</div>
 
-    <h1>Think you know your <span>music?</span></h1>
+<h1>It's time to <span>Name That Tune - LIVE!</span></h1>
 
-    <p>
-      Get ready for a different kind of trivia night.
-      Hear the music performed live, put your knowledge
-      to the test, and see if your team can name that tune!
-    </p>
+<p>
+  Forget the recorded clips and ordinary trivia questions.
+  Gus & Jean bring the music to you, performing songs live
+  as you listen, recognize, sing along, and compete with
+  your team. It's an interactive night of live music,
+  friendly competition, and plenty of memorable moments.
+</p>
 
-    <a href="/team" class="button">Join the Game →</a>
+<a href="/team" class="button">Join the Game →</a>
 
-    <p class="hero-note">
-      Have your team name and game code ready.
-    </p>
-  </div>
+<p class="hero-note">
+  Grab your team. Get ready for a night of live music.
+</p>
 
-  <div class="visual">
-    <div class="music-note note-one">♪</div>
-    <div class="record">
-      <div class="record-label">
-        NAME THAT<br>TUNE
-      </div>
-    </div>
-    <div class="music-note note-two">♫</div>
-  </div>
+  
+
+
 </section>
 
 <section class="intro">
-  <div class="eyebrow" style="color:#065B7A">Not your ordinary trivia night</div>
+  <div class="eyebrow" style="color:#065B7A">
+    More than a trivia night
+  </div>
 
-  <h2>Live music meets friendly competition.</h2>
+  <h2>You don't just hear the music. You're part of it.</h2>
 
   <p>
-    Forget the usual trivia format. Gus & Jean bring the music
-    to life with a live Name That Tune experience where teams
-    listen, collaborate, and compete. From familiar favorites
-    to songs that put your memory to the test, every round
-    brings another chance to take the lead.
+    Hosted and performed live by Gus & Jean, Name That Tune
+    brings the excitement of a musical game show into the room.
+    Every song is performed live, every round brings a new
+    challenge, and every team has a chance to take the lead.
+    From the first familiar notes to the final mystery medley,
+    it's a fully immersive musical experience that brings
+    people together through the songs they know and love.
   </p>
 </section>
 
-<section class="how">
-  <h2>How It Works</h2>
+<section class="rounds">
 
-  <div class="steps">
-    <div class="step">
-      <div class="step-number">1</div>
-      <h3>Join Your Team</h3>
+  <div class="eyebrow" style="color:#065B7A;text-align:center">
+    Five rounds. Countless musical moments.
+  </div>
+
+  <h2>Every round brings something different.</h2>
+
+  <p class="rounds-intro">
+    From recognizing a familiar guitar intro to tackling
+    a musical mystery, each round puts a different twist
+    on the songs you know and love.
+  </p>
+
+  <div class="round-grid">
+
+    <div class="round-card">
+      <div class="round-label">Round 01</div>
+      <h3>Name That Tune</h3>
       <p>
-        Grab your teammates, choose a team name,
-        and enter the game code to get started.
+        It starts with the music. Listen to Gus & Jean
+        perform the guitar introduction and see how quickly
+        your team recognizes the song.
       </p>
     </div>
 
-    <div class="step">
-      <div class="step-number">2</div>
-      <h3>Listen & Guess</h3>
+    <div class="round-card">
+      <div class="round-label">Round 02</div>
+      <h3>Finish the Lyric</h3>
       <p>
-        Listen to the live performance and work
-        together to identify the song and artist.
+        You know the song. But can you remember what comes
+        next? Listen closely and put your lyrical memory
+        to the test.
       </p>
     </div>
 
-    <div class="step">
-      <div class="step-number">3</div>
-      <h3>Earn Your Points</h3>
+    <div class="round-card">
+      <div class="round-label">Round 03</div>
+      <h3>Musical Mashup</h3>
       <p>
-        Submit your answers, rack up points,
-        and see where your team stands on the leaderboard.
+        Two songs, unexpected combinations, and one musical
+        performance. Can your team identify what's being played?
       </p>
     </div>
+
+    <div class="round-card">
+      <div class="round-label">Round 04</div>
+      <h3>Name That Decade</h3>
+      <p>
+        Travel through the decades with songs that defined
+        their time. Your challenge? Figure out when they belong.
+      </p>
+    </div>
+
+    <div class="round-card">
+      <div class="round-label">Final Round</div>
+      <h3>The Mystery Medley</h3>
+      <p>
+        The ultimate musical challenge. Listen as the clues
+        unfold and become increasingly recognizable.
+        Can your team put it all together?
+      </p>
+    </div>
+
   </div>
 </section>
 
 <section class="closing">
-  <div class="eyebrow">Ready to play?</div>
-  <h2>Let's see what you know.</h2>
-  <p>Get your team together. The music is waiting.</p>
+  <div class="eyebrow">The music is live. The competition is yours.</div>
+  <h2>Think your team has what it takes?</h2>
+  <p>Five rounds. Live performances. One unforgettable night.</p>
 
   <a href="/team" class="button">Join the Game →</a>
-</section>
+</section>>
 
 <footer>
   A live music experience from <strong>Gus & Jean</strong>
