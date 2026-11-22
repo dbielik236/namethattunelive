@@ -1,0 +1,467 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gus & Jean · Name That Tune</title>
+<link rel="stylesheet" href="styles.css">
+
+<style>
+* { box-sizing:border-box; }
+
+body {
+  background:#10283b;
+  color:white;
+  margin:0;
+}
+
+.wrap {
+  max-width:1500px !important;
+  width:94%;
+  margin:auto;
+  padding:30px 0;
+}
+
+.brand {
+  color:#A4E6EC;
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+
+h1 {
+  font-size:clamp(28px,4vw,48px);
+  margin:8px 0;
+  color:white;
+}
+
+h2 {
+  color:white;
+}
+
+.muted { color:#b8c9d4; }
+
+.screen {
+  display:none;
+}
+
+.screen.active {
+  display:block;
+}
+
+.panel {
+  background:#1b394e;
+  border:1px solid #365469;
+  border-radius:18px;
+  padding:clamp(20px,3vw,38px);
+  margin-top:24px;
+}
+
+.center { text-align:center; }
+
+.eyebrow {
+  color:#A4E6EC;
+  font-size:clamp(13px,1.5vw,18px);
+  font-weight:700;
+  letter-spacing:3px;
+  text-transform:uppercase;
+}
+
+.join-code {
+  font-size:clamp(65px,12vw,130px);
+  font-weight:900;
+  letter-spacing:12px;
+  color:white;
+  line-height:1.2;
+  margin:15px 0;
+}
+
+.team-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:14px;
+  margin-top:25px;
+}
+
+.team-card {
+  background:#28485e;
+  border:1px solid #46657a;
+  border-radius:12px;
+  padding:18px 14px;
+  text-align:center;
+  font-size:clamp(16px,2vw,23px);
+  font-weight:700;
+  overflow-wrap:anywhere;
+}
+
+.team-count {
+  color:#A4E6EC;
+  font-size:14px;
+  margin-top:18px;
+}
+
+.game-layout {
+  display:grid;
+  grid-template-columns:1.3fr 0.9fr;
+  gap:22px;
+  align-items:stretch;
+  margin-top:24px;
+}
+
+.round-panel {
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  text-align:center;
+  min-height:390px;
+}
+
+.round-number {
+  color:#A4E6EC;
+  font-size:clamp(38px,6vw,72px);
+  font-weight:900;
+  margin:12px 0;
+}
+
+.song-number {
+  font-size:clamp(24px,3vw,38px);
+  font-weight:700;
+  margin-top:10px;
+}
+
+.leaderboard-title {
+  color:#A4E6EC;
+  font-size:17px;
+  font-weight:800;
+  letter-spacing:2px;
+  margin-bottom:20px;
+}
+
+.leader-row {
+  display:grid;
+  grid-template-columns:38px 1fr auto;
+  gap:10px;
+  align-items:center;
+  padding:13px 5px;
+  border-bottom:1px solid #466175;
+}
+
+.rank {
+  color:#A4E6EC;
+  font-size:22px;
+  font-weight:900;
+}
+
+.team-name {
+  font-size:clamp(15px,1.6vw,21px);
+  font-weight:700;
+  overflow-wrap:anywhere;
+}
+
+.team-score {
+  font-size:clamp(20px,2.5vw,29px);
+  font-weight:900;
+  color:#A4E6EC;
+}
+
+.score-detail {
+  color:#b8c9d4;
+  font-size:13px;
+  margin-top:3px;
+}
+
+.results-heading {
+  font-size:clamp(35px,6vw,70px);
+  color:#A4E6EC;
+  font-weight:900;
+  text-align:center;
+  margin:12px 0 30px;
+}
+
+.results-list {
+  max-width:950px;
+  margin:0 auto;
+}
+
+.results-list .leader-row {
+  padding:20px 12px;
+}
+
+.results-list .rank {
+  font-size:clamp(23px,3vw,34px);
+}
+
+.results-list .team-name {
+  font-size:clamp(19px,2.5vw,29px);
+}
+
+.results-list .team-score {
+  font-size:clamp(25px,3.5vw,40px);
+}
+
+.results-list .score-detail {
+  font-size:15px;
+}
+
+.footer {
+  text-align:center;
+  color:#9eb3c2;
+  font-size:13px;
+  margin-top:24px;
+}
+
+@media(max-width:800px) {
+  .game-layout {
+    grid-template-columns:1fr;
+  }
+
+  .round-panel {
+    min-height:260px;
+  }
+
+  .team-grid {
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  }
+
+  .join-code {
+    letter-spacing:6px;
+  }
+}
+</style>
+</head>
+
+<body>
+<main class="wrap">
+
+<header>
+  <div class="brand">Gus & Jean · Name That Tune</div>
+  <h1 id="eventName">Name That Tune</h1>
+  <p id="statusText" class="muted">Connecting to game...</p>
+</header>
+
+<!-- WAITING ROOM -->
+<section id="waitingScreen" class="screen">
+  <div class="panel center">
+    <div class="eyebrow">Get ready to play</div>
+    <h2 style="font-size:clamp(25px,4vw,42px)">Join the Game!</h2>
+
+    <div id="joinCode" class="join-code"></div>
+
+    <p class="muted">Enter this code on your device to join.</p>
+
+    <div class="divider"></div>
+
+    <h2>Teams Playing</h2>
+
+    <div id="teamGrid" class="team-grid">
+      <div class="muted">Waiting for teams to join...</div>
+    </div>
+
+    <div id="teamCount" class="team-count"></div>
+  </div>
+</section>
+
+<!-- ACTIVE ROUND -->
+<section id="activeScreen" class="screen">
+  <div class="game-layout">
+
+    <div class="panel round-panel">
+      <div class="eyebrow">Now Playing</div>
+      <div id="activeRound" class="round-number">ROUND 1</div>
+      <div id="activeSong" class="song-number">SONG 1</div>
+      <p class="muted">Listen carefully. Name that tune!</p>
+    </div>
+
+    <div class="panel">
+      <div class="leaderboard-title">LEADERBOARD</div>
+      <div id="activeLeaderboard"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ROUND RESULTS -->
+<section id="roundEndedScreen" class="screen">
+  <div class="panel">
+    <div class="eyebrow center">Round Complete</div>
+    <div id="roundResultsTitle" class="results-heading">ROUND 1 RESULTS</div>
+    <div id="roundResults" class="results-list"></div>
+  </div>
+</section>
+
+<!-- FINAL RESULTS -->
+<section id="gameEndedScreen" class="screen">
+  <div class="panel">
+    <div class="eyebrow center">Game Complete</div>
+    <div class="results-heading">FINAL LEADERBOARD</div>
+    <div id="finalResults" class="results-list"></div>
+    <h2 class="center" style="color:#A4E6EC;margin-top:35px">
+      Thanks for playing!
+    </h2>
+  </div>
+</section>
+
+<div class="footer">
+  Game code: <span id="code"></span>
+</div>
+
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="shared.js"></script>
+
+<script>
+let gameData=null;
+let teams=[];
+let gameUnsubscribe=null;
+let teamsUnsubscribe=null;
+
+$("code").textContent=gameCode;
+$("joinCode").textContent=gameCode;
+
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(el=>{
+    el.classList.remove("active");
+  });
+
+  $(id).classList.add("active");
+}
+
+function renderTeams(){
+  const grid=$("teamGrid");
+
+  if(!teams.length){
+    grid.innerHTML='<div class="muted">Waiting for teams to join...</div>';
+    $("teamCount").textContent="No teams have joined yet";
+    return;
+  }
+
+  grid.innerHTML=teams.map(t=>`
+    <div class="team-card">${esc(t.name||"Unnamed Team")}</div>
+  `).join("");
+
+  $("teamCount").textContent=
+    teams.length+" team"+(teams.length===1?"":"s")+" ready to play";
+}
+
+function renderLeaderboard(containerId,standings,showRoundPoints){
+  const container=$(containerId);
+
+  if(!standings||!standings.length){
+    container.innerHTML=
+      '<p class="muted center">Scores will appear after the first round.</p>';
+    return;
+  }
+
+  container.innerHTML=standings.map((t,i)=>`
+    <div class="leader-row">
+      <div class="rank">${i===0?"🏆":i+1}</div>
+
+      <div>
+        <div class="team-name">${esc(t.name||"Unnamed Team")}</div>
+        ${showRoundPoints?`
+          <div class="score-detail">
+            ${t.roundPoints||0} points this round
+          </div>
+        `:""}
+      </div>
+
+      <div class="team-score">${t.totalPoints||0}</div>
+    </div>
+  `).join("");
+}
+
+function renderDisplay(){
+  if(!gameData)return;
+
+  const g=gameData;
+  const phase=g.phase;
+  const round=currentRound(g);
+  const standings=g.leaderboardSnapshot||[];
+
+  $("eventName").textContent=g.eventName||"Name That Tune";
+
+  if(phase==="waiting"){
+    $("statusText").textContent="Waiting for the game to begin";
+    $("joinCode").textContent=gameCode;
+    renderTeams();
+    showScreen("waitingScreen");
+    return;
+  }
+
+  if(phase==="active"){
+    $("statusText").textContent="Game in progress";
+    $("activeRound").textContent=round.name||("ROUND "+(g.currentRound+1));
+    $("activeSong").textContent=
+      "SONG "+g.currentSong+" OF "+round.songCount;
+
+    renderLeaderboard("activeLeaderboard",standings,false);
+    showScreen("activeScreen");
+    return;
+  }
+
+  if(phase==="roundEnded"){
+    $("statusText").textContent="Round complete";
+    $("roundResultsTitle").textContent=
+      (round.name||("ROUND "+(g.currentRound+1))).toUpperCase()+" RESULTS";
+
+    renderLeaderboard("roundResults",standings,true);
+    showScreen("roundEndedScreen");
+    return;
+  }
+
+  if(phase==="gameEnded"){
+    $("statusText").textContent="Game complete";
+    renderLeaderboard("finalResults",standings,false);
+    showScreen("gameEndedScreen");
+    return;
+  }
+
+  $("statusText").textContent="Waiting for the game to begin";
+  showScreen("waitingScreen");
+}
+
+if(!gameCode){
+  $("statusText").textContent="Add ?game=YOURCODE to the display URL.";
+  showScreen("waitingScreen");
+}else{
+  auth.signInAnonymously().then(()=>{
+
+    gameUnsubscribe=gameRef().onSnapshot(s=>{
+      if(!s.exists){
+        $("statusText").textContent="Game not found.";
+        return;
+      }
+
+      gameData=s.data();
+      renderDisplay();
+    },e=>{
+      console.error("GAME LISTENER ERROR:",e);
+      $("statusText").textContent="Unable to load game.";
+    });
+
+    teamsUnsubscribe=gameRef().collection("teams").onSnapshot(s=>{
+      teams=s.docs.map(d=>({
+        id:d.id,
+        ...d.data()
+      }));
+
+      renderTeams();
+    },e=>{
+      console.error("TEAM LISTENER ERROR:",e);
+    });
+
+  }).catch(e=>{
+    console.error("DISPLAY AUTH ERROR:",e);
+    $("statusText").textContent="Unable to connect to game.";
+  });
+}
+</script>
+
+</body>
+</html>

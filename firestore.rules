@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isHost() {
+      return signedIn()
+        && request.auth.token.email == "gusandjeanmusic@gmail.com";
+    }
+
+    match /games/{gameId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isHost();
+
+      match /teams/{teamId} {
+        allow read: if signedIn();
+
+        allow create: if signedIn()
+          && request.resource.data.ownerUid == request.auth.uid;
+
+        allow update, delete: if isHost();
+
+        match /answers/{answerId} {
+          function isTeamOwner() {
+            return signedIn()
+              && get(/databases/$(database)/documents/games/$(gameId)/teams/$(teamId)).data.ownerUid == request.auth.uid;
+          }
+
+          allow read: if isHost() || isTeamOwner();
+
+          allow create: if signedIn()
+            && request.resource.data.ownerUid == request.auth.uid;
+
+          allow update, delete: if isHost();
+        }
+      }
+    }
+  }
+}
