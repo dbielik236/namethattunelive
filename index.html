@@ -1,0 +1,450 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Name That Tune | A Live Music Experience</title>
+<meta name="description" content="Join Gus & Jean for a live Name That Tune experience. Listen, guess the song, and see if your team can take the lead.">
+
+<style>
+:root {
+  --teal:#065B7A;
+  --dark:#10384B;
+  --aqua:#A4E6EC;
+  --coral:#F0A59F;
+  --cream:#F8F7F2;
+  --white:#FFFFFF;
+}
+
+* {
+  box-sizing:border-box;
+}
+
+html {
+  scroll-behavior:smooth;
+}
+
+body {
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  color:var(--dark);
+  background:var(--cream);
+}
+
+header {
+  padding:22px 7%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:var(--white);
+}
+
+.logo {
+  color:var(--teal);
+  font-weight:800;
+  font-size:20px;
+  letter-spacing:1px;
+}
+
+.header-tag {
+  font-size:13px;
+  color:#627987;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+.hero {
+  min-height:570px;
+  padding:75px 8%;
+  background:linear-gradient(120deg,#065B7A,#10384B);
+  color:white;
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  align-items:center;
+  gap:50px;
+  overflow:hidden;
+}
+
+.eyebrow {
+  color:var(--aqua);
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:3px;
+  text-transform:uppercase;
+}
+
+.hero h1 {
+  font-size:clamp(48px,7vw,82px);
+  line-height:1.02;
+  margin:20px 0;
+  letter-spacing:-3px;
+}
+
+.hero h1 span {
+  color:var(--aqua);
+}
+
+.hero p {
+  font-size:19px;
+  line-height:1.7;
+  color:#E0EBEF;
+  max-width:550px;
+}
+
+.button {
+  display:inline-block;
+  margin-top:25px;
+  padding:17px 30px;
+  border-radius:7px;
+  background:var(--coral);
+  color:#17394A;
+  font-size:16px;
+  font-weight:800;
+  text-decoration:none;
+  transition:transform .2s,background .2s;
+}
+
+.button:hover {
+  transform:translateY(-3px);
+  background:#F6BDB6;
+}
+
+.hero-note {
+  font-size:13px !important;
+  color:#B8D2DD !important;
+  margin-top:17px;
+}
+
+/* Decorative music illustration */
+
+.visual {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  position:relative;
+  min-height:350px;
+}
+
+.record {
+  width:min(320px,75vw);
+  aspect-ratio:1;
+  border-radius:50%;
+  background:
+    repeating-radial-gradient(
+      circle,
+      #17232A 0px,
+      #17232A 2px,
+      #263943 3px,
+      #17232A 5px
+    );
+  box-shadow:0 25px 60px #071E2B88;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  animation:spin 18s linear infinite;
+}
+
+.record:before {
+  content:"";
+  position:absolute;
+  width:35%;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:var(--coral);
+  border:8px solid #E8A39B;
+}
+
+.record:after {
+  content:"";
+  position:absolute;
+  width:8px;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:#17232A;
+}
+
+.record-label {
+  position:absolute;
+  z-index:2;
+  font-size:12px;
+  font-weight:900;
+  color:#17394A;
+  letter-spacing:1px;
+  text-align:center;
+  line-height:1.5;
+  transform:translateY(-23px);
+}
+
+.music-note {
+  position:absolute;
+  color:var(--aqua);
+  font-size:65px;
+  font-weight:bold;
+}
+
+.note-one {
+  top:10px;
+  right:5px;
+}
+
+.note-two {
+  bottom:10px;
+  left:0;
+  color:var(--coral);
+}
+
+@keyframes spin {
+  to { transform:rotate(360deg); }
+}
+
+.intro {
+  text-align:center;
+  padding:85px 8% 65px;
+  max-width:1000px;
+  margin:auto;
+}
+
+.intro h2 {
+  font-size:clamp(30px,4vw,43px);
+  margin:15px 0;
+  color:var(--teal);
+}
+
+.intro p {
+  font-size:18px;
+  line-height:1.8;
+  color:#5D7079;
+}
+
+.how {
+  padding:65px 8% 85px;
+  background:#EAF5F5;
+}
+
+.how h2 {
+  text-align:center;
+  font-size:34px;
+  color:var(--teal);
+  margin-bottom:45px;
+}
+
+.steps {
+  max-width:1050px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:25px;
+}
+
+.step {
+  background:white;
+  padding:32px 25px;
+  border-radius:12px;
+  text-align:center;
+  box-shadow:0 5px 20px #16435A0C;
+}
+
+.step-number {
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin:0 auto 18px;
+  background:var(--aqua);
+  color:var(--teal);
+  font-size:21px;
+  font-weight:900;
+}
+
+.step h3 {
+  color:var(--teal);
+  font-size:21px;
+}
+
+.step p {
+  color:#637780;
+  line-height:1.6;
+  font-size:15px;
+}
+
+.closing {
+  background:var(--dark);
+  color:white;
+  text-align:center;
+  padding:75px 20px;
+}
+
+.closing h2 {
+  font-size:clamp(30px,4vw,43px);
+  margin:12px 0;
+}
+
+.closing p {
+  color:#C5D7DF;
+  font-size:17px;
+}
+
+footer {
+  padding:25px;
+  text-align:center;
+  color:#74858D;
+  background:var(--cream);
+  font-size:13px;
+}
+
+footer strong {
+  color:var(--teal);
+}
+
+@media(max-width:750px) {
+  header {
+    padding:20px 6%;
+  }
+
+  .header-tag {
+    display:none;
+  }
+
+  .hero {
+    grid-template-columns:1fr;
+    text-align:center;
+    padding:65px 7% 45px;
+    gap:10px;
+  }
+
+  .hero p {
+    margin-left:auto;
+    margin-right:auto;
+  }
+
+  .visual {
+    min-height:280px;
+  }
+
+  .record {
+    width:240px;
+  }
+
+  .steps {
+    grid-template-columns:1fr;
+  }
+
+  .intro {
+    padding:65px 8%;
+  }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .record {
+    animation:none;
+  }
+
+  .button {
+    transition:none;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">GUS & JEAN</div>
+  <div class="header-tag">A Live Music Experience</div>
+</header>
+
+<section class="hero">
+  <div>
+    <div class="eyebrow">The music. The memories. The competition.</div>
+
+    <h1>Think you know your <span>music?</span></h1>
+
+    <p>
+      Get ready for a different kind of trivia night.
+      Hear the music performed live, put your knowledge
+      to the test, and see if your team can name that tune!
+    </p>
+
+    <a href="/team" class="button">Join the Game →</a>
+
+    <p class="hero-note">
+      Have your team name and game code ready.
+    </p>
+  </div>
+
+  <div class="visual">
+    <div class="music-note note-one">♪</div>
+    <div class="record">
+      <div class="record-label">
+        NAME THAT<br>TUNE
+      </div>
+    </div>
+    <div class="music-note note-two">♫</div>
+  </div>
+</section>
+
+<section class="intro">
+  <div class="eyebrow" style="color:#065B7A">Not your ordinary trivia night</div>
+
+  <h2>Live music meets friendly competition.</h2>
+
+  <p>
+    Forget the usual trivia format. Gus & Jean bring the music
+    to life with a live Name That Tune experience where teams
+    listen, collaborate, and compete. From familiar favorites
+    to songs that put your memory to the test, every round
+    brings another chance to take the lead.
+  </p>
+</section>
+
+<section class="how">
+  <h2>How It Works</h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-number">1</div>
+      <h3>Join Your Team</h3>
+      <p>
+        Grab your teammates, choose a team name,
+        and enter the game code to get started.
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <h3>Listen & Guess</h3>
+      <p>
+        Listen to the live performance and work
+        together to identify the song and artist.
+      </p>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <h3>Earn Your Points</h3>
+      <p>
+        Submit your answers, rack up points,
+        and see where your team stands on the leaderboard.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="eyebrow">Ready to play?</div>
+  <h2>Let's see what you know.</h2>
+  <p>Get your team together. The music is waiting.</p>
+
+  <a href="/team" class="button">Join the Game →</a>
+</section>
+
+<footer>
+  A live music experience from <strong>Gus & Jean</strong>
+</footer>
+
+</body>
+</html>
