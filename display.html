@@ -349,6 +349,17 @@ function renderTeams(){
     teams.length+" team"+(teams.length===1?"":"s")+" ready to play";
 }
 
+
+function denseRank(standings,index){
+  const score=Number(standings[index].totalPoints)||0;
+  const higherScores=new Set(
+    standings
+      .map(t=>Number(t.totalPoints)||0)
+      .filter(s=>s>score)
+  );
+  return higherScores.size+1;
+}
+
 function renderLeaderboard(containerId,standings,showRoundPoints){
   const container=$(containerId);
 
@@ -358,23 +369,28 @@ function renderLeaderboard(containerId,standings,showRoundPoints){
     return;
   }
 
-  container.innerHTML=standings.map((t,i)=>`
-    <div class="leader-row">
-      <div class="rank">${i===0?"🏆":i+1}</div>
+  container.innerHTML=standings.map((t,i)=>{
+    const rank=denseRank(standings,i);
 
-      <div>
-        <div class="team-name">${esc(t.name||"Unnamed Team")}</div>
-        ${showRoundPoints?`
-          <div class="score-detail">
-            ${t.roundPoints||0} points this round
-          </div>
-        `:""}
+    return `
+      <div class="leader-row">
+        <div class="rank">${rank===1?"🏆":rank}</div>
+
+        <div>
+          <div class="team-name">${esc(t.name||"Unnamed Team")}</div>
+          ${showRoundPoints?`
+            <div class="score-detail">
+              ${t.roundPoints||0} points this round
+            </div>
+          `:""}
+        </div>
+
+        <div class="team-score">${t.totalPoints||0}</div>
       </div>
-
-      <div class="team-score">${t.totalPoints||0}</div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
+
 
 function renderDisplay(){
   if(!gameData)return;
