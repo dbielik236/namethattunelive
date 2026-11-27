@@ -16,6 +16,25 @@ service cloud.firestore {
       allow read: if signedIn();
       allow create, update, delete: if isHost();
 
+      match /bonusAnswers/{answerId} {
+        function isTeamOwner() {
+          return signedIn()
+            && resource.data.ownerUid == request.auth.uid;
+        }
+
+        allow read: if isHost() || isTeamOwner();
+
+        allow create: if signedIn()
+          && request.resource.data.ownerUid == request.auth.uid
+          && request.resource.data.teamId is string
+          && request.resource.data.roundIndex is int
+          && get(/databases/$(database)/documents/games/$(gameId)).data.phase == "bonusActive"
+          && get(/databases/$(database)/documents/games/$(gameId)).data.currentRound == request.resource.data.roundIndex
+          && get(/databases/$(database)/documents/games/$(gameId)/teams/$(request.resource.data.teamId)).data.ownerUid == request.auth.uid;
+
+        allow update, delete: if isHost();
+      }
+
       match /teams/{teamId} {
         allow read: if signedIn();
 

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Join Name That Tune</title><link rel="stylesheet" href="styles.css"></head>
+<body><main class="narrow">
+<header><div class="brand">Gus & Jean</div><span class="pill">Name That Tune LIVE!</span></header>
+<section id="joinPanel" class="panel">
+  <h1>Join the game.</h1><p>Enter your team name to get started. Your team can use one phone to submit answers.</p>
+  <label>Game code</label><input id="codeInput" placeholder="Enter the code" maxlength="8">
+  <label>Team name</label><input id="teamName" placeholder="Your team name" maxlength="30">
+  <button id="joinBtn" class="full">Join game</button><div id="joinMsg" class="message">Ask your host for the game code.</div>
+</section>
+<section id="gamePanel" class="hidden">
+  <div class="panel">
+  <div class="brand">Your team</div>
+  <h1 id="teamHeading">Team</h1>
+  <div class="stats" style="display: none !important;">
+    <div class="stat">
+      <strong id="totalScore">0</strong>
+      <span>Total points</span>
+    </div>
+    <div class="stat">
+      <strong id="songCount">0/10</strong>
+      <span>Song</span>
+    </div>
+  </div>
+</div>
+  <div id="playPanel" class="panel">
+    <span class="pill" id="roundLabel">Round 1</span><h2 id="songHeading">Get ready</h2>
+    <p id="songPrompt">Wait for the host to start the next song.</p>
+    <div id="answerForm" class="hidden">
+      <label>Song title</label><input id="songTitle" autocomplete="off" placeholder="What is the song called?">
+      <label>Artist</label><input id="songArtist" autocomplete="off" placeholder="Who performs it?">
+      <button id="lockBtn" class="full">🔒 Lock in answer</button>
+    </div>
+    <div id="lockedBox" style="white-space: pre-line;" class="message hidden"></div>
+    <div id="teamStatus" class="message">Connecting to game…</div>
+  </div>
+  <div id="leaderPanel" class="panel hidden">
+    
+<h2 id="teamLeaderboardTitle">Current standings</h2>
+<div id="teamLeaderboard"></div>
+    <button id="backToGame" style= "display: none !important;" class="full secondary">Back to game</button>
+  </div>
+  <div class="center small" style="padding:8px">Keep this page open throughout the game.</div>
+</section>
+</main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script><script src="firebase-config.js"></script><script src="shared.js"></script>
+<script>
+let myTeamId=null, myUid=null, stopGame=null, stopTeam=null, stopAnswers=null, currentGame=null, currentTeam=null, currentAnswer=null;
+const joinPanel=$("joinPanel"), gamePanel=$("gamePanel");
+const savedGameCode=gameCode||localStorage.getItem("ntt_last_game")||"";
+$("codeInput").value=savedGameCode;
+$("joinBtn").onclick=async()=>{
+  const code=$("codeInput").value.trim().toUpperCase(), name=$("teamName").value.trim();
+  if(!code||!name){showMessage($("joinMsg"),"Enter both a game code and team name.","error");return;}
+  $("joinBtn").disabled=true;
+  try{
+    await auth.signInAnonymously(); myUid=auth.currentUser.uid;
+    const g=await gameRef(code).get(); if(!g.exists) throw new Error("We couldn't find that game code.");
+    const existing=localStorage.getItem("ntt_"+code);
+    if(existing){
+  const t=await teamRef(code,existing).get();
+  if(t.exists&&t.data().ownerUid===myUid){
+    myTeamId=existing;
+    localStorage.setItem("ntt_last_game",code);
+    startGame(code);
+    return;
+  }
+}
+    const dup=await gameRef(code).collection("teams").where("nameLower","==",name.toLowerCase()).get();
+    if(!dup.empty) throw new Error("That team name is already taken. Try another.");
+    const ref=gameRef(code).collection("teams").doc();
+    await ref.set({name,nameLower:name.toLowerCase(),ownerUid:myUid,totalPoints:0,roundPoints:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    myTeamId=ref.id;
+localStorage.setItem("ntt_"+code,myTeamId);
+localStorage.setItem("ntt_last_game",code);
+startGame(code);
+  }catch(e){showMessage($("joinMsg"),e.message,"error");$("joinBtn").disabled=false;}
+};
+function startGame(code){
+  joinPanel.classList.add("hidden");gamePanel.classList.remove("hidden");
+  stopGame=gameRef(code).onSnapshot(s=>{if(s.exists){currentGame=s.data();renderGame(code);}});
+  stopTeam=teamRef(code,myTeamId).onSnapshot(s=>{if(s.exists){currentTeam=s.data();renderTeam();}});
+}
+function renderGame(code){
+  const g=currentGame,r=currentRound(g),key=answerKey(g);
+  $("roundLabel").textContent=`${r.name||"Round "+(g.currentRound+1)} · ${g.currentRound+1}/${g.rounds.length}`;
+  $("songHeading").textContent=`Song ${g.currentSong} of ${r.songCount}`;
+  $("songCount").textContent=`${g.currentSong}/${r.songCount}`;
+  $("totalScore").textContent = currentGame?.phase === "active"
+  ? (currentTeam?.roundStartingPoints ?? currentTeam?.totalPoints ?? 0)
+  : (currentTeam?.totalPoints || 0);
+  $("teamHeading").textContent=currentTeam?.name||"Your team";
+  const showLeaderboard=g.phase==="roundEnded"||g.phase==="gameEnded";
+  $("teamLeaderboardTitle").textContent =
+  g.phase==="gameEnded" ? "Final leaderboard" : "Current standings";
+$("leaderPanel").classList.toggle("hidden",!showLeaderboard);
+$("playPanel").classList.toggle("hidden",showLeaderboard);
+  if(g.phase==="active"){
+    $("songPrompt").textContent="Listen to the clip and lock in your answer.";
+    $("answerForm").classList.remove("hidden");
+    loadCurrentAnswer(code,key);
+  }else if(g.phase==="roundEnded"||g.phase==="gameEnded"){
+    $("songPrompt").textContent=g.phase==="gameEnded"?"The game is over. Thanks for playing!":"This round has ended. Check the leaderboard!";
+    $("answerForm").classList.add("hidden");
+  }else{
+    $("songPrompt").textContent="The host will start the game shortly.";
+    $("answerForm").classList.add("hidden");
+  }
+  if(showLeaderboard) loadLeaderboard(code);
+}
+async function loadCurrentAnswer(code,key){
+  if(stopAnswers)stopAnswers();
+
+  stopAnswers=teamRef(code,myTeamId).collection("answers").doc(key).onSnapshot(s=>{
+    currentAnswer=s.exists?s.data():null;
+
+    $("lockedBox").classList.toggle("hidden",!currentAnswer);
+    $("answerForm").classList.toggle("hidden",!!currentAnswer||currentGame.phase!=="active");
+
+    if(currentAnswer){
+      $("lockedBox").textContent=
+        `🔒 Answer locked in!\n\nTitle: ${currentAnswer.title}\nArtist: ${currentAnswer.artist}`;
+
+      $("teamStatus").textContent="Your answer is locked. Watch for the results at the end of the round!";
+    }else{
+      $("songTitle").value="";
+      $("songArtist").value="";
+      $("teamStatus").textContent="Your answer is not submitted yet.";
+    }
+  });
+}
+$("lockBtn").onclick=async()=>{
+  const title=$("songTitle").value.trim(),artist=$("songArtist").value.trim();
+  if(!title||!artist){showMessage($("teamStatus"),"Enter both the song title and artist before locking in.","error");return;}
+  $("lockBtn").disabled=true;
+  try{
+    const key=answerKey(currentGame);
+console.log("SUBMISSION PATH:", gameCode, myTeamId, key);
+const answerRef=teamRef(gameCode||$("codeInput").value.trim().toUpperCase(),myTeamId).collection("answers").doc(key);
+    await db.runTransaction(async tx=>{
+      const existing=await tx.get(answerRef);
+      if(existing.exists) throw new Error("This answer is already locked.");
+      tx.set(answerRef,{
+  title,artist,roundIndex:currentGame.currentRound,songNumber:currentGame.currentSong,
+  ownerUid:auth.currentUser.uid,
+  titlePoints:null,artistPoints:null,
+  submittedAt:firebase.firestore.FieldValue.serverTimestamp()
+});
+    });
+  }catch(e){showMessage($("teamStatus"),"This answer may already be locked. Please wait for the next song.","error");}
+  $("lockBtn").disabled=false;
+};
+async function loadLeaderboard(code){
+  const standings=currentGame?.leaderboardSnapshot||[];
+
+  if(!standings.length){
+    $("teamLeaderboard").innerHTML=
+      '<p class="muted">No leaderboard available yet.</p>';
+    return;
+  }
+
+  $("teamLeaderboard").innerHTML=standings.map((t,i)=>`
+    <div class="leader-row">
+      <div class="rank">${i===0?"🏆":i+1}</div>
+      <div>
+        <div class="team-name">${esc(t.name)}</div>
+        <div class="score-detail">${t.roundPoints||0} points this round</div>
+      </div>
+      <div class="team-score">${t.totalPoints||0}</div>
+    </div>
+  `).join("");
+}
+function renderTeam(){if(!currentTeam)return;$("teamHeading").textContent=currentTeam.name;$("totalScore").textContent=currentTeam.totalPoints||0;$("roundScore").textContent=currentTeam.roundPoints||0;}
+$("backToGame").onclick=()=>{$("leaderPanel").classList.add("hidden");$("playPanel").classList.remove("hidden");};
+
+auth.onAuthStateChanged(async user=>{
+  if(!user)return;
+
+  const code=(gameCode||localStorage.getItem("ntt_last_game")||"").trim().toUpperCase();
+  if(!code)return;
+
+  const savedTeamId=localStorage.getItem("ntt_"+code);
+  if(!savedTeamId)return;
+
+  try{
+    const t=await teamRef(code,savedTeamId).get();
+
+    if(t.exists&&t.data().ownerUid===user.uid){
+      myUid=user.uid;
+      myTeamId=savedTeamId;
+      startGame(code);
+    }
+  }catch(e){
+    console.error("TEAM RECOVERY ERROR:",e);
+  }
+});
+</script></body></html>

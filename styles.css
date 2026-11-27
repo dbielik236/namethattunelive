@@ -18,10 +18,36 @@ button.full{width:100%;margin-top:16px}.actions{display:flex;flex-wrap:wrap;gap:
 .message{padding:11px 13px;border-radius:10px;background:#101a30;color:var(--muted);font-size:13px;margin-top:12px}.message.error{color:#ffc0c8;background:#3a1d2b}.message.ok{color:#a4f4d3;background:#12352f}
 .pill{display:inline-block;padding:6px 10px;border-radius:99px;background:#243252;color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .answer-row,.team-row,.song-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
-.answer-row:last-child,.team-row:last-child,.song-row:last-child{border:0}.answer-meta{min-width:0;flex:1}.answer-meta strong{display:block}.answer-meta small{color:var(--muted)}
+.answer-row:last-child,.team-row:last-child,.song-row:last-child{border:0}.answer-meta{min-width:0;flex:1}.answer-meta strong{display:block}.answer-meta small{color:var(--muted); display: block;
+  margin-top: 4px;}
 .score-buttons{display:flex;gap:7px;flex-wrap:wrap}.score-buttons button{padding:9px 12px;font-size:12px}
 .leader-row{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;padding:15px;border-bottom:1px solid var(--line)}
 .rank{font-size:22px;font-weight:800;color:var(--gold)}.leader-row:first-child{background:#f4cf7512;border-radius:12px}
 .team-score{font-size:21px;font-weight:800;color:var(--cyan)}.center{text-align:center}.big-code{font-size:34px;letter-spacing:.16em;font-weight:800;color:var(--gold)}
 hr{border:0;border-top:1px solid var(--line);margin:20px 0}.hidden{display:none!important}
 @media(max-width:700px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}.panel{padding:17px}.answer-row{align-items:flex-start;flex-direction:column}.score-buttons{width:100%}.score-buttons button{flex:1}}
+
+
+.answer-meta {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 5px;
+}
+
+.answer-meta small {
+  display: block !important;
+  width: 100%;
+  white-space: normal;
+}
+
+#hostLeaderboard .leaderboard-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  align-items: center;
+}
+
+#hostLeaderboard .leaderboard-buttons button {
+  min-width: 42px;
+}

@@ -394,26 +394,40 @@ function renderDisplay(){
     return;
   }
 
-  if(phase==="active"){
-    $("statusText").textContent="Game in progress";
-    $("activeRound").textContent=round.name||("ROUND "+(g.currentRound+1));
-    $("activeSong").textContent=
-      "SONG "+g.currentSong+" OF "+round.songCount;
+  if(phase==="active" || phase==="bonusActive"){
+  const isBonus=phase==="bonusActive";
 
-    renderLeaderboard("activeLeaderboard",standings,false);
-    showScreen("activeScreen");
-    return;
-  }
+  $("statusText").textContent=isBonus
+    ?"Bonus song in progress"
+    :"Game in progress";
 
-  if(phase==="roundEnded"){
-    $("statusText").textContent="Round complete";
-    $("roundResultsTitle").textContent=
-      (round.name||("ROUND "+(g.currentRound+1))).toUpperCase()+" RESULTS";
+  $("activeRound").textContent=
+    `${round.name||("ROUND "+(g.currentRound+1))} · ${g.currentRound+1}/${g.rounds.length}`;
 
-    renderLeaderboard("roundResults",standings,true);
-    showScreen("roundEndedScreen");
-    return;
-  }
+  $("activeSong").textContent=isBonus
+    ?"BONUS ROUND"
+    :"SONG "+g.currentSong+" OF "+round.songCount;
+
+  renderLeaderboard("activeLeaderboard",standings,false);
+  showScreen("activeScreen");
+  return;
+}
+
+  if(phase==="roundEnded" || phase==="bonusEnded"){
+  const isBonus=phase==="bonusEnded";
+
+  $("statusText").textContent=isBonus
+    ?"Bonus round complete"
+    :"Round complete";
+
+  $("roundResultsTitle").textContent=isBonus
+    ?"BONUS ROUND RESULTS"
+    :(round.name||("ROUND "+(g.currentRound+1))).toUpperCase()+" RESULTS";
+
+  renderLeaderboard("roundResults",standings,true);
+  showScreen("roundEndedScreen");
+  return;
+}
 
   if(phase==="gameEnded"){
     $("statusText").textContent="Game complete";
