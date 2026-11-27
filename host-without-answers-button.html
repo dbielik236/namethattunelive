@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Host Control Panel</title><link rel="stylesheet" href="styles.css"></head>
+<body><main class="wrap">
+<header><div><div class="brand">Gus & Jean · Name That Tune</div><h1>Host control panel</h1></div><span class="pill">Private host view</span></header>
+<section id="loginPanel" class="panel" style="max-width:480px">
+<h2>Host sign in</h2><label>Email</label><input id="email" type="email" placeholder="Host email"><label>Password</label><input id="password" type="password" placeholder="Password"><button id="loginBtn" class="full">Sign in</button><div id="loginMsg" class="message">Use the host account configured in Firebase Authentication.</div>
+</section>
+<section id="hostApp" class="hidden">
+<div class="grid">
+<section class="panel">
+<h2>Create a new game</h2><label>Event name</label><input id="eventName" placeholder="Friday Night Name That Tune">
+<label>Number of rounds</label><select id="roundCount"><option>5</option><option>4</option><option>3</option><option>2</option></select>
+<label>Songs per round</label><select id="songsPerRound"><option>6</option><option>5</option><option>4</option><option>3</option></select>
+<button id="createGame" class="full">Create game</button><div id="createMsg" class="message">Creating a game generates a join code and shareable links.</div>
+</section>
+<section class="panel">
+<h2>Current game</h2><div id="noGame" class="muted">Create a game or load one by entering its code.</div>
+<div id="gameInfo" class="hidden"><div class="small">GAME CODE</div><div class="big-code" id="gameCode"></div><p id="eventTitle"></p><div class="actions"><button class="secondary" id="copyTeam">Copy team link</button><button class="secondary" id="copyDisplay">Copy display link</button></div><div style="display: none !important;" class="small" id="gameState"></div></div>
+<label>Load existing game code</label><input id="loadCode" placeholder="ABC123"><button id="loadGame" class="secondary full">Load game</button>
+</section>
+</div>
+<div id="controlArea" class="hidden">
+<section class="panel">
+<div class="grid">
+<div><span class="pill" id="roundPill">Round 1</span><h2 id="currentSongTitle">Song 1</h2><p id="currentSongSub">Ready to play</p></div>
+<div class="stats"><div class="stat"><strong id="teamCount">0</strong><span>Teams</span></div><div class="stat"><strong id="submittedCount">0</strong><span>Submitted</span></div><div class="stat"><strong id="pendingCount">0</strong><span>To review</span></div></div>
+</div>
+<div class="actions">
+<button class="success" id="startGame">Start game</button>
+
+<button class="danger" id="endGame">End game</button>
+</div>
+<div class="actions">
+
+<button class="secondary" id="nextSong">Next song</button>
+<button class="gold" id="endRound">End round</button>
+<button class="success hidden" id="startBonusSong">Start Bonus Song</button>
+<button class="gold hidden" id="endBonusSong">End Bonus Song</button>
+<button class="secondary" id="nextRound">Next round</button>
+
+</div>
+<div id="hostMsg" class="message">Create or load a game to begin.</div>
+</section>
+<section id="normalSubmissionPanel" class="panel"><h2>Submissions for this song</h2><div id="submissions"><p class="muted">No submissions yet.</p></div></section>
+<section id="bonusPanel" class="panel hidden"><h2>Bonus Song submissions</h2><p class="muted">Review submissions in the order they were received. Only the next unreviewed submission can be scored.</p><div id="bonusSubmissions"><p class="muted">No bonus submissions yet.</p></div></section>
+<section class="panel"><h2>Current leaderboard</h2><div id="hostLeaderboard"></div></section>
+</div>
+</section>
+</main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script><script src="firebase-config.js"></script><script src="shared.js"></script>
+<script>
+let activeCode=null, gameData=null, stopGame=null, stopTeams=null, stopBonusAnswers=null, bonusListenKey=null, teams=[], answerCache={}, bonusAnswerCache=[];
+$("loginBtn").onclick=async()=>{
+  try {
+    await auth.signInWithEmailAndPassword(
+      $("email").value,
+      $("password").value
+    );
+  } catch(e) {
+    showMessage($("loginMsg"),e.message,"error");
+  }
+};
+auth.onAuthStateChanged(u=>{
+  console.log("HOST AUTH CHECK:",u?.email,u?.uid,u?.isAnonymous);
+  if(u&&!u.isAnonymous){
+    $("loginPanel").classList.add("hidden");
+    $("hostApp").classList.remove("hidden");
+    const savedCode=localStorage.getItem("gusJeanActiveGame");
+    if(savedCode) loadGame(savedCode);
+  }
+});
+$("createGame").onclick=async()=>{
+ try{
+  const n=Number($("roundCount").value),songs=Number($("songsPerRound").value),code=slugCode();
+  const rounds=Array.from({length:n},(_,i)=>({name:`Round ${i+1}`,songCount:songs}));
+  await gameRef(code).set({eventName:$("eventName").value.trim()||"Name That Tune",rounds,currentRound:0,currentSong:1,phase:"waiting",leaderboardVisible:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  showMessage($("createMsg"),"Game created: "+code,"ok");loadGame(code);
+ }catch(e){showMessage($("createMsg"),e.message,"error");}
+};
+$("loadGame").onclick=()=>loadGame($("loadCode").value.trim().toUpperCase());
+function loadGame(code){
+ if(!code)return;if(stopGame)stopGame();if(stopTeams)stopTeams();if(stopBonusAnswers){stopBonusAnswers();stopBonusAnswers=null;}bonusListenKey=null;bonusAnswerCache=[];
+ activeCode=code;
+localStorage.setItem("gusJeanActiveGame",code);
+$("gameInfo").classList.remove("hidden");$("controlArea").classList.remove("hidden");$("noGame").classList.add("hidden");$("gameCode").textContent=code;
+ stopGame=gameRef(code).onSnapshot(s=>{if(!s.exists){showMessage($("hostMsg"),"Game not found.","error");return;}gameData=s.data();syncBonusListener();renderHost();});
+ stopTeams=gameRef(code).collection("teams").onSnapshot(s=>{teams=s.docs.map(d=>({id:d.id,...d.data()}));renderHost();});
+}
+function renderHost(){
+ if(!gameData)return;
+ $("eventTitle").textContent=gameData.eventName;$("gameState").textContent=`Status: ${gameData.phase} · Leaderboard ${gameData.leaderboardVisible?"visible":"hidden"}`;
+ const r=currentRound(gameData);$("roundPill").textContent=`${r.name} · ${gameData.currentRound+1}/${gameData.rounds.length}`;
+ $("currentSongTitle").textContent=gameData.phase==="bonusActive"?"Bonus Song":`Song ${gameData.currentSong} of ${r.songCount}`;
+ $("currentSongSub").textContent=gameData.phase==="active"?"Teams can submit answers now.":gameData.phase==="bonusActive"?"Teams can submit one artist answer.":"Game status: "+gameData.phase;
+ const lastRound=gameData.currentRound>=gameData.rounds.length-1;
+ $("startGame").classList.toggle("hidden",gameData.phase!=="waiting");
+ $("endGame").classList.toggle("hidden",gameData.phase==="gameEnded");
+ $("nextSong").classList.toggle("hidden",gameData.phase!=="active");
+ $("endRound").classList.toggle("hidden",gameData.phase!=="active");
+ $("startBonusSong").classList.toggle("hidden",!(gameData.phase==="roundEnded"&&!lastRound));
+ $("endBonusSong").classList.toggle("hidden",gameData.phase!=="bonusActive");
+ $("nextRound").classList.toggle("hidden",!(gameData.phase==="bonusEnded"||(gameData.phase==="roundEnded"&&lastRound)));
+ $("normalSubmissionPanel").classList.toggle("hidden",gameData.phase==="bonusActive");
+ $("bonusPanel").classList.toggle("hidden",gameData.phase!=="bonusActive"&&gameData.phase!=="bonusEnded");
+ $("teamCount").textContent=teams.length;$("submittedCount").textContent=Object.keys(answerCache).length;
+ $("pendingCount").textContent=Object.values(answerCache).filter(a=>a.titlePoints===null||a.artistPoints===null).length;
+ renderSubmissions();renderBonusSubmissions();renderLeaderboard();
+}
+function syncBonusListener(){
+  if(!activeCode||!gameData)return;
+  const shouldListen=gameData.phase==="bonusActive"||gameData.phase==="bonusEnded";
+  const key=shouldListen?`${activeCode}_r${gameData.currentRound}`:null;
+  if(key===bonusListenKey)return;
+  if(stopBonusAnswers){stopBonusAnswers();stopBonusAnswers=null;}
+  bonusListenKey=key;
+  bonusAnswerCache=[];
+  if(!shouldListen){renderBonusSubmissions();return;}
+  stopBonusAnswers=gameRef(activeCode).collection("bonusAnswers").onSnapshot(s=>{
+    bonusAnswerCache=s.docs
+      .map(d=>({id:d.id,...d.data()}))
+      .filter(a=>a.roundIndex===gameData.currentRound)
+      .sort((a,b)=>{
+        const at=a.submittedAt?.toMillis?a.submittedAt.toMillis():0;
+        const bt=b.submittedAt?.toMillis?b.submittedAt.toMillis():0;
+        return at-bt||a.id.localeCompare(b.id);
+      });
+    renderBonusSubmissions();
+  },e=>{
+    console.error("BONUS ANSWER LISTENER ERROR:",e);
+    showMessage($("hostMsg"),"Could not load Bonus Song submissions: "+e.message,"error");
+  });
+}
+
+function renderBonusSubmissions(){
+  const container=$("bonusSubmissions");
+  if(!container)return;
+  if(!bonusAnswerCache.length){
+    container.innerHTML="<p class='muted'>No bonus submissions yet.</p>";
+    return;
+  }
+  const firstPending=bonusAnswerCache.find(a=>a.isCorrect!==true&&a.isCorrect!==false);
+  container.innerHTML=bonusAnswerCache.map((a,index)=>{
+    const reviewed=a.isCorrect===true||a.isCorrect===false;
+    const isNext=!!firstPending&&a.id===firstPending.id;
+    const time=a.submittedAt?.toDate
+      ? a.submittedAt.toDate().toLocaleTimeString([],{hour:"numeric",minute:"2-digit",second:"2-digit"})
+      : "Time pending";
+    const status=reviewed
+      ? (a.isCorrect?`Correct · +${a.pointsAwarded||0} points`:"Incorrect · 0 points")
+      : (isNext?"Ready to review":"Waiting for earlier submission");
+    return `<div class="answer-row">
+      <div class="answer-meta">
+        <strong>${index+1}. ${esc(a.teamName||"Team")}</strong>
+        <small>Artist: ${esc(a.artist||"")}</small>
+        <small>Submitted: ${esc(time)}</small>
+        <small>${esc(status)}</small>
+      </div>
+      <div class="score-buttons">
+        <button class="success" ${(!isNext||reviewed||gameData.phase!=="bonusActive")?"disabled":""} onclick="scoreBonusAnswer('${a.id}',true)">Correct</button>
+        <button class="danger" ${(!isNext||reviewed||gameData.phase!=="bonusActive")?"disabled":""} onclick="scoreBonusAnswer('${a.id}',false)">Incorrect</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+async function scoreBonusAnswer(answerId,isCorrect){
+  if(!activeCode||!gameData||gameData.phase!=="bonusActive")return;
+  const index=bonusAnswerCache.findIndex(a=>a.id===answerId);
+  if(index<0)return;
+  const earlier=bonusAnswerCache.slice(0,index);
+  if(earlier.some(a=>a.isCorrect!==true&&a.isCorrect!==false)){
+    showMessage($("hostMsg"),"Review the earlier submission first.","error");
+    return;
+  }
+  const alreadyCorrect=earlier.filter(a=>a.isCorrect===true).length;
+  const points=isCorrect?Math.max(1,5-alreadyCorrect):0;
+  const answerRef=gameRef(activeCode).collection("bonusAnswers").doc(answerId);
+  const answerData=bonusAnswerCache[index];
+  const tRef=teamRef(activeCode,answerData.teamId);
+  try{
+    await db.runTransaction(async tx=>{
+      const a=await tx.get(answerRef);
+      const t=await tx.get(tRef);
+      if(!a.exists||!t.exists)throw new Error("Submission or team no longer exists.");
+      if(a.data().isCorrect===true||a.data().isCorrect===false)throw new Error("This submission has already been reviewed.");
+      tx.update(answerRef,{
+        isCorrect,
+        pointsAwarded:points,
+        reviewedAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+      tx.update(tRef,{
+        totalPoints:(t.data().totalPoints||0)+points,
+        roundPoints:(t.data().roundPoints||0)+points
+      });
+    });
+    showMessage($("hostMsg"),isCorrect?`Correct answer. ${points} point${points===1?"":"s"} awarded.`:"Incorrect answer. No points awarded.","ok");
+  }catch(e){
+    showMessage($("hostMsg"),e.message,"error");
+  }
+}
+
+async function refreshAnswers(){
+ if(!activeCode||!gameData)return;
+ const key=answerKey(gameData), next={};
+ await Promise.all(teams.map(async t=>{const d=await teamRef(activeCode,t.id).collection("answers").doc(key).get().catch(e=>{console.error("ANSWER READ ERROR:",e);return null;});if(d.exists)next[t.id]=d.data();}));
+ answerCache=next;renderHost();
+}
+function renderSubmissions(){
+ const key=answerKey(gameData);
+ const rows=teams.map(t=>{
+  const a=answerCache[t.id];
+
+  if(!a)return `<div class="answer-row"><div class="answer-meta"><strong>${esc(t.name)}</strong><small>Not submitted</small></div><span class="pill">Waiting</span></div>`;
+
+  const titleDone=a.titlePoints!==null,artistDone=a.artistPoints!==null;
+
+  return `<div class="answer-row">
+    <div class="answer-meta">
+      <strong>${esc(t.name)}</strong>
+      <div>
+      <small>Title: ${esc(a.title)}</small>
+      <small>Artist: ${esc(a.artist)}</small>
+      </div>
+      <div>
+      <small>Title: ${titleDone?(a.titlePoints?"Correct (+1)":"Incorrect"):"Pending"}</small>
+      <small>Artist: ${artistDone?(a.artistPoints?"Correct (+1)":"Incorrect"):"Pending"}</small>
+      </div>
+    </div>
+    <div class="score-buttons">
+      <div>
+      <button class="success" ${titleDone?"disabled":""} onclick="scoreAnswer('${t.id}','title',1)">Title ✓</button>
+      <button class="danger" ${titleDone?"disabled":""} onclick="scoreAnswer('${t.id}','title',0)">Title ✕</button>
+      </div>
+      
+      <div>
+      <button class="success" ${artistDone?"disabled":""} onclick="scoreAnswer('${t.id}','artist',1)">Artist ✓</button>
+      <button class="danger" ${artistDone?"disabled":""} onclick="scoreAnswer('${t.id}','artist',0)">Artist ✕</button>
+        </div>
+      </div>
+  </div>`;
+ }).join("");
+
+ $("submissions").innerHTML=rows||"<p class='muted'>No teams have joined yet.</p>";
+}
+async function scoreAnswer(teamId,part,points){
+ const key=answerKey(gameData),aRef=teamRef(activeCode,teamId).collection("answers").doc(key),tRef=teamRef(activeCode,teamId);
+ try{
+  await db.runTransaction(async tx=>{
+   const a=await tx.get(aRef),t=await tx.get(tRef);if(!a.exists||!t.exists)throw new Error("Submission no longer exists.");
+   const data=a.data(),field=part==="title"?"titlePoints":"artistPoints";
+   if(data[field]!==null)throw new Error("This part has already been scored.");
+   tx.update(aRef,{[field]:points,scoredAt:firebase.firestore.FieldValue.serverTimestamp()});
+   tx.update(tRef,{totalPoints:(t.data().totalPoints||0)+points,roundPoints:(t.data().roundPoints||0)+points});
+  });
+  showMessage($("hostMsg"),"Score saved.","ok");await refreshAnswers();
+ }catch(e){showMessage($("hostMsg"),e.message,"error");}
+}
+function renderLeaderboard(){
+ const sorted=[...teams].sort((a,b)=>(b.totalPoints||0)-(a.totalPoints||0));
+
+ $("hostLeaderboard").innerHTML=sorted.map((t,i)=>`
+  <div class="leader-row">
+   <div class="rank">${i+1}</div>
+   <strong>${esc(t.name)}
+    <small class="muted">(${t.roundPoints||0} this round)</small>
+   </strong>
+   <div class="team-score">${t.totalPoints||0}</div>
+   <div class="leaderboard-buttons">
+    <button class="success" onclick="adjustTeamScore('${t.id}',1)">+1</button>
+    <button class="danger" onclick="adjustTeamScore('${t.id}',-1)">−1</button>
+   </div>
+  </div>
+ `).join("")||"<p class='muted'>No teams yet.</p>";
+}
+
+async function adjustTeamScore(teamId,amount){
+ const tRef=teamRef(activeCode,teamId);
+
+ try{
+  await db.runTransaction(async tx=>{
+   const snap=await tx.get(tRef);
+
+   if(!snap.exists)throw new Error("Team not found.");
+
+   const data=snap.data();
+   const total=data.totalPoints||0;
+   const round=data.roundPoints||0;
+
+   if(amount<0&&total<=0){
+    throw new Error("This team has no points to remove.");
+   }
+
+   tx.update(tRef,{
+    totalPoints:Math.max(0,total+amount),
+    roundPoints:gameData.phase==="gameEnded"
+      ? round
+      : Math.max(0,round+amount)
+   });
+  });
+
+  // Refresh the frozen results if the round or game has ended.
+  if(gameData.phase==="roundEnded"||gameData.phase==="bonusEnded"||gameData.phase==="gameEnded"){
+   const leaderboard=await getLeaderboardSnapshot();
+   await updateGame({leaderboardSnapshot:leaderboard});
+  }
+
+  showMessage($("hostMsg"),"Score adjusted successfully.","ok");
+
+ }catch(e){
+  showMessage($("hostMsg"),e.message,"error");
+ }
+}
+
+async function updateGame(patch){
+  if(!activeCode)return;
+
+  try {
+
+    console.log("AUTH AT GAME START:", {
+  uid: auth.currentUser?.uid,
+  email: auth.currentUser?.email,
+  anonymous: auth.currentUser?.isAnonymous,
+  code: activeCode
+});
+
+
+
+
+    await gameRef(activeCode).update(patch);
+    console.log("GAME UPDATE SUCCESS:",patch);
+  } catch(e) {
+    console.error("GAME UPDATE FAILED:",e.code,e.message);
+    showMessage($("hostMsg"),"Game update failed: "+e.message,"error");
+  }
+}
+
+$("startGame").onclick=()=>updateGame({
+  phase:"active",
+  leaderboardVisible:false
+});
+function confirmAction(message){
+  return window.confirm(message);
+}
+$("nextSong").onclick=async()=>{
+if(!confirmAction("Are you sure you want to move to the next song?"))return;
+const r=currentRound(gameData);if(gameData.currentSong<r.songCount)await updateGame({currentSong:gameData.currentSong+1,phase:"active",leaderboardVisible:false});else showMessage($("hostMsg"),"That was the last song. End the round when scoring is complete.","error");};
+async function getLeaderboardSnapshot(){
+  const snap=await gameRef(activeCode).collection("teams")
+    .orderBy("totalPoints","desc").get();
+
+  return snap.docs.map(d=>({
+    id:d.id,
+    ...d.data()
+  }));
+}
+
+$("endRound").onclick=async()=>{
+  if(!confirmAction("Are you sure you want to end this round?"))return;
+
+  if(!activeCode)return;
+
+  const leaderboard=await getLeaderboardSnapshot();
+
+  await updateGame({
+    phase:"roundEnded",
+    leaderboardSnapshot:leaderboard
+  });
+};
+
+$("startBonusSong").onclick=async()=>{
+  if(!confirmAction("Start the Bonus Song? Teams will be able to lock in one artist answer."))return;
+  if(!activeCode||gameData.phase!=="roundEnded"||gameData.currentRound>=gameData.rounds.length-1)return;
+  await updateGame({phase:"bonusActive"});
+};
+
+$("endBonusSong").onclick=async()=>{
+  if(!confirmAction("End the Bonus Song? Teams will no longer be able to submit answers."))return;
+  if(!activeCode||gameData.phase!=="bonusActive")return;
+  try{
+    const leaderboard=await getLeaderboardSnapshot();
+    await updateGame({phase:"bonusEnded",leaderboardSnapshot:leaderboard});
+    showMessage($("hostMsg"),"Bonus Song ended. Standings updated.","ok");
+  }catch(e){
+    showMessage($("hostMsg"),"Could not finish the Bonus Song: "+e.message,"error");
+  }
+};
+
+$("nextRound").onclick=async()=>{
+  if(!confirmAction("Are you sure you want to start the next round?"))return;
+  if(!activeCode||!gameData)return;
+  const isLastRound=gameData.currentRound+1>=gameData.rounds.length;
+  const allowed=gameData.phase==="bonusEnded"||(gameData.phase==="roundEnded"&&isLastRound);
+  if(!allowed){
+    showMessage($("hostMsg"),"Complete the Bonus Song before moving to the next round.","error");
+    return;
+  }
+  if(isLastRound){
+    const leaderboard=await getLeaderboardSnapshot();
+    await updateGame({phase:"gameEnded",leaderboardSnapshot:leaderboard});
+    showMessage($("hostMsg"),"Game complete!","ok");
+    return;
+  }
+  const batch=db.batch();
+  teams.forEach(t=>batch.update(teamRef(activeCode,t.id),{
+    roundPoints:0,
+    roundStartingPoints:t.totalPoints||0
+  }));
+  await batch.commit();
+  await updateGame({
+    currentRound:gameData.currentRound+1,
+    currentSong:1,
+    phase:"active"
+  });
+};
+
+$("endGame").onclick=async()=>{
+  if(!confirmAction("Are you sure you want to end the game? This cannot be undone."))return;
+  
+  if(!activeCode)return;
+
+  const leaderboard=await getLeaderboardSnapshot();
+
+  await updateGame({
+    phase:"gameEnded",
+    leaderboardSnapshot:leaderboard
+  });
+
+  showMessage($("hostMsg"),"Game ended!","ok");
+};
+$("copyTeam").onclick=()=>GenCopy(location.href.replace(/host\.html.*/,"team.html?game="+activeCode));
+$("copyDisplay").onclick=()=>GenCopy(location.href.replace(/host\.html.*/,"display.html?game="+activeCode));
+function GenCopy(s){navigator.clipboard.writeText(s).then(()=>showMessage($("hostMsg"),"Link copied.","ok")).catch(()=>showMessage($("hostMsg"),s));}
+setInterval(()=>{if(activeCode)refreshAnswers();},2500);
+</script></body></html>

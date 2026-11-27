@@ -15,7 +15,7 @@
 </section>
 <section class="panel">
 <h2>Current game</h2><div id="noGame" class="muted">Create a game or load one by entering its code.</div>
-<div id="gameInfo" class="hidden"><div class="small">GAME CODE</div><div class="big-code" id="gameCode"></div><p id="eventTitle"></p><div class="actions"><button class="secondary" id="copyTeam">Copy team link</button><button class="secondary" id="copyDisplay">Copy display link</button></div><div style="display: none !important;" class="small" id="gameState"></div></div>
+<div id="gameInfo" class="hidden"><div class="small">GAME CODE</div><div class="big-code" id="gameCode"></div><p id="eventTitle"></p><div class="actions"><button class="secondary" id="copyTeam">Copy team link</button><button class="secondary" id="copyDisplay">Copy display link</button><button class="secondary" id="viewAnswers">View All Team Answers</button></div><div style="display: none !important;" class="small" id="gameState"></div></div>
 <label>Load existing game code</label><input id="loadCode" placeholder="ABC123"><button id="loadGame" class="secondary full">Load game</button>
 </section>
 </div>
@@ -429,6 +429,7 @@ $("endGame").onclick=async()=>{
 };
 $("copyTeam").onclick=()=>GenCopy(location.href.replace(/host\.html.*/,"team.html?game="+activeCode));
 $("copyDisplay").onclick=()=>GenCopy(location.href.replace(/host\.html.*/,"display.html?game="+activeCode));
+$("viewAnswers").onclick=()=>{if(activeCode)window.open("answers.html?game="+encodeURIComponent(activeCode),"_blank");};
 function GenCopy(s){navigator.clipboard.writeText(s).then(()=>showMessage($("hostMsg"),"Link copied.","ok")).catch(()=>showMessage($("hostMsg"),s));}
 setInterval(()=>{if(activeCode)refreshAnswers();},2500);
 </script></body></html>
