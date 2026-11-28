@@ -38,6 +38,22 @@ header {
   align-items:center;
   justify-content:space-between;
   background:var(--white);
+  gap:20px;
+}
+
+.header-join {
+  color:var(--teal);
+  font-size:14px;
+  text-decoration:none;
+  white-space:nowrap;
+}
+
+.header-join strong {
+  margin-left:5px;
+}
+
+.header-join:hover {
+  text-decoration:underline;
 }
 
 .logo {
@@ -47,15 +63,9 @@ header {
   letter-spacing:1px;
 }
 
-.header-tag {
-  font-size:13px;
-  color:#627987;
-  letter-spacing:1px;
-  text-transform:uppercase;
-}
-
 .hero {
   min-height:570px;
+  padding-top: 30px !important;
   padding:75px 8%;
   background:linear-gradient(120deg,#065B7A,#10384B);
   color:white;
@@ -110,6 +120,24 @@ header {
   background:#F6BDB6;
 }
 
+.join-button {
+  display:inline-block;
+  
+  padding:8px 15px;
+  border-radius:7px;
+  background:var(--coral);
+  color:#17394A;
+  font-size:16px;
+  font-weight:800;
+  text-decoration:none;
+  transition:transform .2s,background .2s;
+}
+
+.join-button:hover {
+  transform:translateY(-1px);
+  background:#F6BDB6;
+}
+
 .hero-note {
   font-size:13px !important;
   color:#B8D2DD !important;
@@ -141,20 +169,20 @@ header {
 
 .rounds {
   padding:75px 8%;
-  background:#EAF5F5;
+  background:linear-gradient(120deg,#065B7A,#10384B);
   text-align:center;
 }
 
 .rounds h2 {
   font-size:clamp(30px,4vw,43px);
-  color:var(--teal);
+   color:white;
   margin:15px 0;
 }
 
 .rounds-intro {
   max-width:700px;
   margin:0 auto 45px;
-  color:#637780;
+  color:var(--aqua);
   font-size:17px;
   line-height:1.7;
 }
@@ -192,8 +220,8 @@ header {
   justify-content:center;
   align-items:center;
   margin:0 auto 18px;
-  background:var(--aqua);
-  color:var(--teal);
+  background: #065B7A;
+   color:var(--aqua);
   font-size:17px;
   font-weight:900;
 }
@@ -220,6 +248,8 @@ header {
   .round-card:nth-child(5) {
     grid-column:1;
   }
+
+  
 }
 
 
@@ -241,11 +271,44 @@ header {
   font-size:17px;
 }
 
+.bring-it {
+  text-align:center;
+  padding:85px 8%;
+  max-width:950px;
+  margin:auto;
+}
+
+.bring-it h2 {
+  font-size:clamp(30px,4vw,43px);
+  color:var(--teal);
+  margin:15px 0;
+}
+
+.bring-it p {
+  font-size:18px;
+  line-height:1.8;
+  color:#5D7079;
+  max-width:800px;
+  margin:18px auto;
+}
+
+.email-option {
+  margin-top:25px;
+  color:var(--teal);
+  font-size:14px;
+}
+
+
+
+.email-option a:hover {
+  text-decoration:underline;
+}
+
 footer {
   padding:25px;
   text-align:center;
-  color:#74858D;
-  background:var(--cream);
+  color:white;
+  background:var(--teal);
   font-size:13px;
 }
 
@@ -258,9 +321,11 @@ footer strong {
     padding:20px 6%;
   }
 
-  .header-tag {
-    display:none;
-  }
+  .header-join {
+  font-size:12px;
+  text-align:right;
+  white-space:normal;
+}
 
   .hero {
     grid-template-columns:1fr;
@@ -303,134 +368,162 @@ footer strong {
 </style>
 </head>
 
+
 <body>
 
-<header>
-  <div class="logo">GUS & JEAN</div>
-  <div class="header-tag">A Live Music Experience</div>
-</header>
-
-<section class="hero">
-  <div>
-    <div class="eyebrow">A live musical game show</div>
-
-<h1>It's time to <span>Name That Tune - LIVE!</span></h1>
-
-<p>
-  Forget the recorded clips and ordinary trivia questions.
-  Gus & Jean bring the music to you, performing songs live
-  as you listen, recognize, sing along, and compete with
-  your team. It's an interactive night of live music,
-  friendly competition, and plenty of memorable moments.
-</p>
-
-<a href="../team.html" class="button">Join the Game →</a>
-
-<p class="hero-note">
-  Grab your team. Get ready for a night of live music.
-</p>
-
+  <header>
+    <div class="logo">GUS & JEAN present:</div>
+    <a href="../team.html" class="header-join">
+      Have a game code? <strong class="join-button">Join a Game →</strong>
+    </a>
+  </header>
   
-
-
-</section>
-
-<section class="intro">
-  <div class="eyebrow" style="color:#065B7A">
-    More than a trivia night
-  </div>
-
-  <h2>You don't just hear the music. You're part of it.</h2>
-
-  <p>
-    Hosted and performed live by Gus & Jean, Name That Tune
-    brings the excitement of a musical game show into the room.
-    Every song is performed live, every round brings a new
-    challenge, and every team has a chance to take the lead.
-    From the first familiar notes to the final mystery medley,
-    it's a fully immersive musical experience that brings
-    people together through the songs they know and love.
-  </p>
-</section>
-
-<section class="rounds">
-
-  <div class="eyebrow" style="color:#065B7A;text-align:center">
-    Five rounds. Countless musical moments.
-  </div>
-
-  <h2>Every round brings something different.</h2>
-
-  <p class="rounds-intro">
-    From recognizing a familiar guitar intro to tackling
-    a musical mystery, each round puts a different twist
-    on the songs you know and love.
-  </p>
-
-  <div class="round-grid">
-
-    <div class="round-card">
-      <div class="round-label">Round 01</div>
-      <h3>Name That Tune</h3>
+  <section class="hero">
+    <div>
+      <div class="eyebrow">A live musical game show</div>
+  
+      <h1>It's time to <span>Name That Tune - LIVE!</span></h1>
+  
       <p>
-        It starts with the music. Listen to Gus & Jean
-        perform the guitar introduction and see how quickly
-        your team recognizes the song.
+        Forget the recorded clips and ordinary trivia questions.
+        Gus & Jean bring the music to you, performing songs live
+        as you listen, recognize, sing along, and compete with
+        your team. It's an interactive night of live music,
+        friendly competition, and plenty of memorable moments.
+      </p>
+  
+      <a href="#bring-it" class="button">Bring the Experience to Your Event →</a>
+  
+      <p class="hero-note">
+        Five rounds. Live performances. An unforgettable experience.
       </p>
     </div>
-
-    <div class="round-card">
-      <div class="round-label">Round 02</div>
-      <h3>Finish the Lyric</h3>
-      <p>
-        You know the song. But can you remember what comes
-        next? Listen closely and put your lyrical memory
-        to the test.
-      </p>
+    <div>
+      <img style="border-radius: 12px;" src="hero.png">
     </div>
-
-    <div class="round-card">
-      <div class="round-label">Round 03</div>
-      <h3>Musical Mashup</h3>
-      <p>
-        Two songs, unexpected combinations, and one musical
-        performance. Can your team identify what's being played?
-      </p>
+  </section>
+  
+  <section class="intro">
+    
+    <img style="width: 100%; border-radius: 12px; padding-bottom: 40px;" src="clapping.png">
+    
+    <div class="eyebrow" style="color:#065B7A">
+      More than a trivia night
     </div>
-
-    <div class="round-card">
-      <div class="round-label">Round 04</div>
-      <h3>Name That Decade</h3>
-      <p>
-        Travel through the decades with songs that defined
-        their time. Your challenge? Figure out when they belong.
-      </p>
+  
+    <h2>You don't just listen to the music... you're part of it.</h2>
+  
+    <p>
+      Hosted and performed live by Gus & Jean, Name That Tune
+      brings the excitement of a musical game show into the room.
+      Every song is performed live, every round brings a new
+      challenge, and every team has a chance to take the lead.
+      From the first familiar notes to the final mystery medley,
+      it's a fully immersive musical experience that brings
+      people together through the songs they know and love.
+    </p>
+  </section>
+  
+  <section class="rounds">
+  
+    
+  
+    <h2>Every round brings something different.</h2>
+  
+    <p class="rounds-intro">
+      From recognizing a familiar guitar intro to tackling
+      a musical mystery, each round puts a different twist
+      on the songs you know and love.
+    </p>
+  
+    <div class="round-grid">
+  
+      <div class="round-card">
+        <div class="round-label">Round 01</div>
+        <h3>Name That Tune</h3>
+        <p>
+          It starts with the music. Listen to Gus & Jean
+          perform the guitar introduction and see how quickly
+          your team recognizes the song.
+        </p>
+      </div>
+  
+      <div class="round-card">
+        <div class="round-label">Round 02</div>
+        <h3>Finish the Lyric</h3>
+        <p>
+          You know the song. But can you remember what comes
+          next? Listen closely and put your lyrical memory
+          to the test.
+        </p>
+      </div>
+  
+      <div class="round-card">
+        <div class="round-label">Round 03</div>
+        <h3>Musical Mashup</h3>
+        <p>
+          Two songs, unexpected combinations, and one musical
+          performance. Can your team identify what's being played?
+        </p>
+      </div>
+  
+      <div class="round-card">
+        <div class="round-label">Round 04</div>
+        <h3>Name That Decade</h3>
+        <p>
+          Travel through the decades with songs that defined
+          their time. Your challenge? Figure out when they belong.
+        </p>
+      </div>
+  
+      <div class="round-card">
+        <div class="round-label">Final Round</div>
+        <h3>The Mystery Medley</h3>
+        <p>
+          The ultimate musical challenge. Listen as the clues
+          unfold and become increasingly recognizable.
+          Can your team put it all together?
+        </p>
+      </div>
+  
     </div>
-
-    <div class="round-card">
-      <div class="round-label">Final Round</div>
-      <h3>The Mystery Medley</h3>
-      <p>
-        The ultimate musical challenge. Listen as the clues
-        unfold and become increasingly recognizable.
-        Can your team put it all together?
-      </p>
+  </section>
+  
+  <!-- EVENT BOOKING SECTION -->
+  <section class="bring-it" id="bring-it">
+    <img style="width: 100%; border-radius: 12px; padding-bottom: 40px;" src="group.png">
+  
+    <h2>Bring the Name That Tune LIVE! experience to your event</h2>
+  
+    <p>
+      From corporate gatherings and fundraisers to customer
+      appreciation events and company celebrations, this interactive 
+      musical experience is the perfectly unique way to bring people 
+      together, create some friendly competition, and make your event memorable.
+    </p>
+    <p>
+      We'd love to hear what you're planning.
+      Get in touch and let's talk about bringing
+      Name That Tune LIVE! to your event.
+    </p>
+  
+    <a href="mailto:gusandjeanmusic@gmail.com?subject=Name%20That%20Tune%20LIVE%20Inquiry"
+       class="button">
+      Contact Gus & Jean →
+    </a>
+  
+    <div class="email-option">
+      Or email us directly: gusandjeanmusic@gmail.com
     </div>
-
-  </div>
-</section>
-
-<section class="closing">
-  <div class="eyebrow">The music is live. The competition is yours.</div>
-  <h2>Think your team has what it takes?</h2>
-  <p>Five rounds. Live performances. One unforgettable night.</p>
-
-  <a href="../team.html" class="button">Join the Game →</a>
-</section>>
-
-<footer>
-  A live music experience from <strong>Gus & Jean</strong>
-</footer>
-
-</body>
+    
+  </section>
+  
+  
+  
+  <footer>
+    © Copyright 2026. All Rights Reserved.
+  </footer>
+  
+  </body>
+  
 </html>
