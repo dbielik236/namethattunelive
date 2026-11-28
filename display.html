@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gus & Jean · Name That Tune</title>
+<title>Gus & Jean - Name That Tune LIVE!</title>
 <link rel="stylesheet" href="styles.css">
 
 <style>
@@ -417,11 +417,12 @@ function renderDisplay(){
     ?"Bonus song in progress"
     :"Game in progress";
 
-  $("activeRound").textContent=
-    `${round.name||("ROUND "+(g.currentRound+1))} · ${g.currentRound+1}/${g.rounds.length}`;
+    $("activeRound").textContent=isBonus
+    ?`END OF ${round.name||("ROUND "+(g.currentRound+1))}`
+    :`${round.name||("ROUND "+(g.currentRound+1))} · ${g.currentRound+1}/${g.rounds.length}`;
 
   $("activeSong").textContent=isBonus
-    ?"BONUS ROUND"
+    ?"BONUS SONG"
     :"SONG "+g.currentSong+" OF "+round.songCount;
 
   renderLeaderboard("activeLeaderboard",standings,false);

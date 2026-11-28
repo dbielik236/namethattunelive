@@ -1,7 +1,7 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Join Name That Tune</title><link rel="stylesheet" href="styles.css"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gus & Jean - Name That Tune LIVE!</title><link rel="stylesheet" href="styles.css"></head>
 <body><main class="narrow">
-<header><div class="brand">Gus & Jean</div><span class="pill">Name That Tune LIVE!</span></header>
+<header><div class="brand">Name That Tune LIVE!</div><span class="pill">Get Your Game On</span></header>
 <section id="joinPanel" class="panel">
   <h1>Join the game.</h1><p>Enter your team name to get started. Your team can use one phone to submit answers.</p>
   <label>Game code</label><input id="codeInput" placeholder="Enter the code" maxlength="8">
@@ -125,8 +125,13 @@ function renderGame(code){
     stopAnswers=null;
     currentAnswer=null;
   }
-  $("roundLabel").textContent=`${r.name||"Round "+(g.currentRound+1)} · ${g.currentRound+1}/${g.rounds.length}`;
-  $("songHeading").textContent=g.phase==="bonusActive"?"Bonus Song":`Song ${g.currentSong} of ${r.songCount}`;
+  $("roundLabel").textContent=g.phase==="bonusActive"
+    ?`${r.name||"Round "+(g.currentRound+1)} Ended`
+    :`${r.name||"Round "+(g.currentRound+1)} · ${g.currentRound+1}/${g.rounds.length}`;
+
+  $("songHeading").textContent=g.phase==="bonusActive"
+    ?"Bonus Song"
+    :`Song ${g.currentSong} of ${r.songCount}`;
   $("songCount").textContent=`${g.currentSong}/${r.songCount}`;
   $("totalScore").textContent = currentGame?.phase === "active"
     ? (currentTeam?.roundStartingPoints ?? currentTeam?.totalPoints ?? 0)
